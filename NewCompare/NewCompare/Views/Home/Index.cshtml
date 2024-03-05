@@ -1,0 +1,188 @@
+﻿@model NewCompare.Models.JsonData
+
+@{
+    ViewData["Title"] = "JSON Comparison";
+}
+
+<h1>JSON Comparison</h1>
+
+<form id="comparisonForm" asp-controller="Home" asp-action="CompareJson" method="post">
+    <div style="display: flex;  ">
+        <div style="flex: 1; padding-left: 120px;">
+            <label for="leftJson">Left JSON:</label><br />
+            <textarea id="leftJson" name="LeftJsonString" rows="40" class="json-textarea">@Model.LeftJsonString</textarea>
+        </div>
+        <div style="flex: 1; padding-left: 120px;">
+            <label for="rightJson">Right JSON:</label><br />
+            <textarea id="rightJson" name="RightJsonString" rows="40" class="json-textarea">@Model.RightJsonString</textarea>
+        </div>
+    </div>
+    <div class="button-container">
+        <button id="compareButton" type="submit">Compare</button>
+    </div>
+</form>
+
+@if (ViewBag.LeftToRightDifference != null)
+{
+    <h2 style="text-align:center">Comparison Result</h2>
+    <div class="difference-container">
+        <div class="difference" id="leftToRightDifference">
+            <h3>JSON Differences:</h3>
+            <pre>@Html.Raw(HighlightJson(ViewBag.LeftToRightDifference))</pre>
+        </div>
+    </div>
+}
+else if (ViewBag.Error != null)
+{
+    <p>@ViewBag.Error</p>
+}
+
+<style>
+    /* CSS for text areas */
+    .json-textarea {
+        width: calc(90% - 10px); /* Adjust as needed */
+        margin-right: 10px;
+        padding: 10px;
+        box-sizing: border-box;
+        resize: vertical;
+        font-size: 12px;
+    }
+
+    /* CSS for differences */
+    .difference-container {
+        display: flex;
+    }
+
+    .difference {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        margin-right: 13px;
+    }
+
+    .button-container {
+        display: flex;
+        justify-content: center; /* Horizontally center */
+        align-items: center; /* Vertically center if needed */
+        height: 50px; /* Set a height for the container */
+    }
+
+    .added {
+        color: green;
+    }
+
+    .removed {
+        color: orangered;
+    }
+</style>
+
+@functions {
+    public string HighlightJson(string json)
+    {
+        var highlightedJson = new System.Text.StringBuilder();
+        var lines = json.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+        bool inObject = false;
+        bool added = false;
+        bool removed = false;
+        int lineIndex = 0;
+        while (lineIndex < lines.Length)
+        {
+            var line = lines[lineIndex];
+            if (line.StartsWith("{") || line.StartsWith("["))
+            {
+                inObject = true;
+                highlightedJson.AppendLine(line);
+            }
+            else if (line.StartsWith("}") || line.StartsWith("]"))
+            {
+                inObject = false;
+                if (removed)
+                {
+                    highlightedJson.AppendLine($"<span class=\"removed\">{line}</span>");
+                }
+                else if (added)
+                {
+                    highlightedJson.AppendLine($"<span class=\"added\">{line}</span>");
+                }
+                else
+                {
+                    highlightedJson.AppendLine(line);
+                }
+            }
+            else if (inObject && (line.Contains("\"+\":") || line.Contains("\"-\":")))
+            {
+                if (line.Contains("\"+\":"))
+                {
+                    added = true;
+                    highlightedJson.AppendLine($"<span class=\"added\">{line}</span>");
+                }
+                else if (line.Contains("\"-\":"))
+                {
+                    removed = true;
+                    highlightedJson.AppendLine($"<span class=\"removed\">{line}</span>");
+                }
+
+                lineIndex++;
+                while (lineIndex < lines.Length && !lines[lineIndex].Contains("}"))
+                {
+                    if (added && lines[lineIndex].Contains("\"-\":"))
+                    {
+                        added = false;
+                        removed = true;
+                    }
+                    else if (removed && lines[lineIndex].Contains("\"+\":"))
+                    {
+                        removed = false;
+                        added = true;
+                    }
+
+                    if (added)
+                    {
+                        highlightedJson.AppendLine($"<span class=\"added\">{lines[lineIndex]}</span>");
+                    }
+                    else if (removed)
+                    {
+                        highlightedJson.AppendLine($"<span class=\"removed\">{lines[lineIndex]}</span>");
+                    }
+                    else
+                    {
+                        highlightedJson.AppendLine(lines[lineIndex]);
+                    }
+                    lineIndex++;
+                }
+                added = false;
+                removed = false;
+            }
+            else
+            {
+                highlightedJson.AppendLine(line);
+            }
+            lineIndex++;
+        }
+        return highlightedJson.ToString();
+    }
+}
+
+<script>document.getElementById('compareButton').addEventListener('click', function () {
+        var leftJson = document.getElementById('leftJson').value;
+        var rightJson = document.getElementById('rightJson').value;
+
+        // Validate JSON data before submitting the form
+        try {
+            JSON.parse(leftJson);
+            JSON.parse(rightJson);
+
+            // Beautify JSON strings
+            var beautifiedLeftJson = JSON.stringify(JSON.parse(leftJson), null, 4);
+            var beautifiedRightJson = JSON.stringify(JSON.parse(rightJson), null, 4);
+
+            // Update textarea values with beautified JSON
+            document.getElementById('leftJson').value = beautifiedLeftJson;
+            document.getElementById('rightJson').value = beautifiedRightJson;
+
+            // Submit the form
+            document.getElementById('comparisonForm').submit();
+        } catch (error) {
+            alert('Invalid JSON data. Please check your input and try again.');
+        }
+    });</script>

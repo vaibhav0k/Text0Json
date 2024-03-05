@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "jiAzKYhherWPPcGV6HfOJ6vlu4SpmQXF9aAUS/3XPFudW2ccf0AQZ+e3jfkZZNSJ9mdJgBBmajWEHDN7o7b7tg==",
+  "success": true,
+  "projectFilePath": "/Users/vaibhavshah/Downloads/NewCompare/NewCompare/NewCompare.csproj",
+  "expectedPackageFiles": [
+    "/Users/vaibhavshah/.nuget/packages/jsondiffpatch.net/2.3.0/jsondiffpatch.net.2.3.0.nupkg.sha512",
+    "/Users/vaibhavshah/.nuget/packages/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}

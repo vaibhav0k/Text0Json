@@ -1,0 +1,116 @@
+﻿@model NewCompare.Models.TextToCompare
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Text Comparison</title>
+    <style>
+        /* Define your CSS styles here */
+        /* For example: */
+        .differences {
+            float: left;
+            width: 48%;
+            margin-right: 2%;
+        }
+
+        .text-textarea {
+            width: calc(90% - 10px); /* Adjust as needed */
+            margin-right: 10px;
+            padding: 10px;
+            box-sizing: border-box;
+            resize: vertical;
+            font-size: 10px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center; /* Horizontally center */
+            align-items: center; /* Vertically center if needed */
+            height: 50px; /* Set a height for the container */
+        }
+            .differences h2 {
+                text-align: center;
+            }
+
+            .differences ul {
+                list-style-type: none;
+                padding-left: 0;
+            }
+
+                .differences ul li {
+                    padding: 5px;
+                    border-bottom: 1px solid #ccc;
+                }
+    </style>
+</head>
+<body>
+    <h1>Text Comparison</h1>
+
+    <form asp-controller="Text" asp-action="Compare" method="post">
+        
+
+        <div style="display: flex;  ">
+            <div style="flex: 1; padding-left: 120px;">
+                <label>Text Area 1:</label>
+                <textarea name="Text1" rows="40" class="text-textarea">@Model?.Text1</textarea>
+            </div>
+
+            <div style="flex: 1; padding-left: 120px;">
+                <label>Text Area 2:</label>
+                <textarea name="Text2" rows="40" class="text-textarea">@Model?.Text2</textarea>
+            </div>
+        </div>
+        <div class="button-container">
+            <button id="compareButton" type="submit">Compare</button>
+        </div>
+
+    </form>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <p>@ViewBag.ErrorMessage</p>
+    }
+
+    @if (ViewBag.Differences1 != null && ViewBag.Differences1.Count > 0)
+    {
+        <div class="differences">
+            <h2>Text 1</h2>
+            <pre>
+            @for (int i = 0; i < ViewBag.CompleteText1.Count; i++)
+            {
+                if (!string.IsNullOrEmpty(ViewBag.Differences1[i]))
+                {
+            <span style="color: red">@ViewBag.Differences1[i]</span>
+                }
+                else
+                {
+            <span>@ViewBag.CompleteText1[i]</span>
+                }
+            }
+        </pre>
+        </div>
+    }
+
+    @if (ViewBag.Differences2 != null && ViewBag.Differences2.Count > 0)
+    {
+        <div class="differences">
+            <h2>Text 2</h2>
+            <pre>
+            @for (int i = 0; i < ViewBag.CompleteText2.Count; i++)
+            {
+                if (!string.IsNullOrEmpty(ViewBag.Differences2[i]))
+                {
+            <span style="color: green">@ViewBag.Differences2[i]</span>
+                }
+                else
+                {
+            <span>@ViewBag.CompleteText2[i]</span>
+                }
+            }
+        </pre>
+        </div>
+    }
+</body>
+</html>
